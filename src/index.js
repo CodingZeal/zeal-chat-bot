@@ -1,29 +1,39 @@
 const ComfyJS = require("comfy.js");
 require('dotenv').config();
-import Parser from 'rss-parser';
+import {Client, PlaceInputType} from "@googlemaps/google-maps-services-js";
+import { fetchLatestPodcastEpisode } from './fetchLatestPodcastEpisode';
+import { fetchCityWeather } from './fetchCityWeather';
 
-const parser = new Parser();
+async function fetchGoogleInfo(location) {
+  const client = new Client({});
+  const params = {
+    input: "google",
+    inputtype: PlaceInputType.textQuery,
+    key: process.env.GOOGLE_KEY,
+    fields: ["name", "utc_offset"]
+  };
 
-async function fetchLatestPodcastEpisode() {
-  let feed = await parser.parseURL('https://feeds.buzzsprout.com/114820.rss');
-
-  const latest = feed.items[0];
-
-  return {
-    title: latest.title,
-    season: latest.itunes.season,
-    episode: latest.itunes.episode,
-    summary: latest.itunes.summary,
-    url: latest.enclosure.url
-  }
+  const response = await client.findPlaceFromText({ params })
+  console.log(response.data)
 }
 
 ComfyJS.onCommand = async ( user, command, message, flags, extra ) => {
-  if( command === "hello" ) {
-    ComfyJS.Say(`Hello, ${user}`)
-  } else if( command === 'podcast' ) {
-    const episode = await fetchLatestPodcastEpisode();
-    ComfyJS.Say(`Episode ${episode.episode} season ${episode.season} from Creating Zeal Podcast. ${episode.title}: ${episode.summary} ${episode.url}`)
+  try {
+    if( command === "hello" ) {
+      ComfyJS.Say(`Hello, ${user}`)
+    } else if( command === 'podcast' ) {
+      const episode = await fetchLatestPodcastEpisode();
+      ComfyJS.Say(`Episode ${episode.episode} season ${episode.season} from Creating Zeal Podcast. ${episode.title}: ${episode.summary} ${episode.url}`)
+    } else if( command === 'weather') {
+      const currentWeather = await fetchCityWeather(message);
+      console.log(currentWeather);
+      ComfyJS.Say(currentWeather);
+    } else if( command === 'time') {
+      const currentWeather = await fetchGoogleInfo(message);
+    }
+  } catch (error) {
+    console.log('error:', error)
+    ComfyJS.Say(`Sorry ${user}, I had an issue running the ${command} command`);
   }
 }
 
