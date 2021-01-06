@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^2.5.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "comfy.js": "^1.0.15",
     "dotenv": "^8.2.0",
     "rss-parser": "^3.7.6",
